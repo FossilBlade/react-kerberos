@@ -83,27 +83,6 @@
         "description": "Virtual network address range."
       }
     },
-    "loadBalancerFrontEndIPName": {
-      "type": "string",
-      "defaultValue": "LBFE",
-      "metadata": {
-        "description": "Load balancer front end IP address name."
-      }
-    },
-    "backendAddressPoolName": {
-      "type": "string",
-      "defaultValue": "LBBE",
-      "metadata": {
-        "description": "Backend address pool name."
-      }
-    },
-    "inboundNatRulesName": {
-      "type": "string",
-      "defaultValue": "adRDP",
-      "metadata": {
-        "description": "Inbound NAT rules name."
-      }
-    },
     "networkInterfaceName": {
       "type": "string",
       "defaultValue": "adNic",
@@ -138,21 +117,8 @@
       "metadata": {
         "description": "Subnet IP range."
       }
-    },
-    "availabilitySetName": {
-      "type": "string",
-      "defaultValue": "adAvailabiltySet",
-      "metadata": {
-        "description": "Availability set name."
-      }
-    },
-    "loadBalancerName": {
-      "type": "string",
-      "defaultValue": "adLoadBalancer",
-      "metadata": {
-        "description": "Load balancer name."
-      }
     }
+
   },
   "resources": [
     {
@@ -167,59 +133,7 @@
         }
       }
     },
-    {
-      "type": "Microsoft.Compute/availabilitySets",
-      "apiVersion": "2022-08-01",
-      "name": "[parameters('availabilitySetName')]",
-      "location": "[parameters('location')]",
-      "properties": {
-        "platformUpdateDomainCount": 20,
-        "platformFaultDomainCount": 2
-      },
-      "sku": {
-        "name": "Aligned"
-      }
-    },
-    {
-      "type": "Microsoft.Network/loadBalancers",
-      "apiVersion": "2022-07-01",
-      "name": "[parameters('loadBalancerName')]",
-      "location": "[parameters('location')]",
-      "properties": {
-        "frontendIPConfigurations": [
-          {
-            "name": "[parameters('loadBalancerFrontEndIPName')]",
-            "properties": {
-              "publicIPAddress": {
-                "id": "[resourceId('Microsoft.Network/publicIPAddresses', parameters('publicIPAddressName'))]"
-              }
-            }
-          }
-        ],
-        "backendAddressPools": [
-          {
-            "name": "[parameters('backendAddressPoolName')]"
-          }
-        ],
-        "inboundNatRules": [
-          {
-            "name": "[parameters('inboundNatRulesName')]",
-            "properties": {
-              "frontendIPConfiguration": {
-                "id": "[resourceId('Microsoft.Network/loadBalancers/frontendIPConfigurations', parameters('loadBalancerName'), parameters('loadBalancerFrontEndIPName'))]"
-              },
-              "protocol": "Tcp",
-              "frontendPort": 3389,
-              "backendPort": 3389,
-              "enableFloatingIP": false
-            }
-          }
-        ]
-      },
-      "dependsOn": [
-        "[resourceId('Microsoft.Network/publicIPAddresses', parameters('publicIPAddressName'))]"
-      ]
-    },
+
     {
       "type": "Microsoft.Network/networkInterfaces",
       "apiVersion": "2022-07-01",
@@ -232,25 +146,17 @@
             "properties": {
               "privateIPAllocationMethod": "Static",
               "privateIPAddress": "[parameters('privateIPAddress')]",
+              "publicIPAddress": {
+                "id": "[resourceId('Microsoft.Network/publicIPAddresses', parameters('publicIPAddressName'))]"
+              },
               "subnet": {
                 "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('virtualNetworkName'), parameters('subnetName'))]"
-              },
-              "loadBalancerBackendAddressPools": [
-                {
-                  "id": "[resourceId('Microsoft.Network/loadBalancers/backendAddressPools', parameters('loadBalancerName'), parameters('backendAddressPoolName'))]"
-                }
-              ],
-              "loadBalancerInboundNatRules": [
-                {
-                  "id": "[resourceId('Microsoft.Network/loadBalancers/inboundNatRules', parameters('loadBalancerName'), parameters('inboundNatRulesName'))]"
-                }
-              ]
+              }
             }
           }
         ]
       },
       "dependsOn": [
-        "[resourceId('Microsoft.Network/loadBalancers', parameters('loadBalancerName'))]",
         "[resourceId('Microsoft.Resources/deployments', 'VNet')]"
       ]
     },
@@ -263,9 +169,7 @@
         "hardwareProfile": {
           "vmSize": "[parameters('vmSize')]"
         },
-        "availabilitySet": {
-          "id": "[resourceId('Microsoft.Compute/availabilitySets', parameters('availabilitySetName'))]"
-        },
+
         "osProfile": {
           "computerName": "[parameters('virtualMachineName')]",
           "adminUsername": "[parameters('adminUsername')]",
@@ -298,6 +202,7 @@
               "lun": 0
             }
           ]
+
         },
         "networkProfile": {
           "networkInterfaces": [
@@ -308,8 +213,7 @@
         }
       },
       "dependsOn": [
-        "[resourceId('Microsoft.Compute/availabilitySets', parameters('availabilitySetName'))]",
-        "[resourceId('Microsoft.Network/loadBalancers', parameters('loadBalancerName'))]",
+
         "[resourceId('Microsoft.Network/networkInterfaces', parameters('networkInterfaceName'))]"
       ]
     },
@@ -344,6 +248,7 @@
         "[resourceId('Microsoft.Compute/virtualMachines', parameters('virtualMachineName'))]"
       ]
     },
+
     {
       "type": "Microsoft.Resources/deployments",
       "apiVersion": "2020-10-01",
@@ -410,9 +315,39 @@
               "metadata": {
                 "description": "Location for all resources."
               }
+            },
+            "networkSecurityGroupName": {
+              "type": "string",
+              "defaultValue": "subnet-default-nsg",
+              "metadata": {
+                "description": "Network Security Group Name For Subnet"
+              }
             }
           },
           "resources": [
+            {
+              "type": "Microsoft.Network/networkSecurityGroups",
+              "apiVersion": "2021-02-01",
+              "name": "[parameters('networkSecurityGroupName')]",
+              "location": "[parameters('location')]",
+              "properties": {
+                "securityRules": [
+                  {
+                    "name": "default-allow-3389",
+                    "properties": {
+                      "priority": 1000,
+                      "access": "Allow",
+                      "direction": "Inbound",
+                      "destinationPortRange": "3389",
+                      "protocol": "Tcp",
+                      "sourcePortRange": "*",
+                      "sourceAddressPrefix": "*",
+                      "destinationAddressPrefix": "*"
+                    }
+                  }
+                ]
+              }
+            },
             {
               "type": "Microsoft.Network/virtualNetworks",
               "apiVersion": "2022-07-01",
@@ -428,11 +363,17 @@
                   {
                     "name": "[parameters('subnetName')]",
                     "properties": {
-                      "addressPrefix": "[parameters('subnetRange')]"
+                      "addressPrefix": "[parameters('subnetRange')]",
+                      "networkSecurityGroup": {
+                        "id": "[resourceId('Microsoft.Network/networkSecurityGroups', variables('networkSecurityGroupName'))]"
+                      }
                     }
                   }
                 ]
-              }
+              },
+              "dependsOn": [
+                "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('networkSecurityGroupName'))]"
+              ]
             }
           ]
         }
@@ -548,6 +489,17 @@
       "dependsOn": [
         "[resourceId('Microsoft.Compute/virtualMachines/extensions', parameters('virtualMachineName'), 'CreateADForest')]"
       ]
-    }
+    },
+
+
+
+
+
+
+
+
+
+
+
   ]
 }
