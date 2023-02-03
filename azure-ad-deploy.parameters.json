@@ -1,0 +1,54 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "adminUsername": {
+            "value": "" 
+        },
+        "adminPassword": {
+            "value": "" 
+        },
+        "domainName": {
+            "value": "" 
+        },
+        "dnsPrefix": {
+            "value": "" 
+        },
+        "vmSize": {
+            "value": "Standard_D2s_v3"
+        },
+        "_artifactsLocation": {
+            "value": "" 
+        },
+        "_artifactsLocationSasToken": {
+            "value": ""
+        },
+        "location": {
+            "value": ""
+        },
+        "virtualMachineName": {
+            "value": "adVM"
+        },
+        "virtualNetworkName": {
+            "value": "adVNET"
+        },
+        "virtualNetworkAddressRange": {
+            "value": "10.0.0.0/16"
+        },
+        "networkInterfaceName": {
+            "value": "adNic"
+        },
+        "privateIPAddress": {
+            "value": "10.0.0.4"
+        },
+        "subnetName": {
+            "value": "adSubnet"
+        },
+        "subnetRange": {
+            "value": "10.0.0.0/24"
+        },
+        "publicIPAddressName": {
+            "value": "adPublicIP"
+        }
+    }
+}
