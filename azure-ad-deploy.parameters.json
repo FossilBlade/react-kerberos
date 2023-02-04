@@ -3,15 +3,12 @@
     "contentVersion": "1.0.0.0",
     "parameters": {
         "adminUsername": {
-            "value": "" 
+            "value": "localadmin" 
         },
         "adminPassword": {
             "value": "" 
         },
         "domainName": {
-            "value": "" 
-        },
-        "dnsPrefix": {
             "value": "" 
         },
         "vmSize": {
@@ -49,6 +46,12 @@
         },
         "publicIPAddressName": {
             "value": "adPublicIP"
+        },
+        "adUsername": {
+            "value": "test1" 
+        },
+        "adUserPass": {
+            "value": "AdBlog@1234"
         }
     }
 }

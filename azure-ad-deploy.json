@@ -21,16 +21,22 @@
         "description": "The password for the administrator account of the new VM and domain"
       }
     },
+    "adUsername": {
+      "type": "string",
+      "metadata": {
+        "description": "The name of a test AD account"
+      }
+    },
+    "adUserPass": {
+      "type": "secureString",
+      "metadata": {
+        "description": "The password for the test AD account"
+      }
+    },
     "domainName": {
       "type": "string",
       "metadata": {
         "description": "The FQDN of the Active Directory Domain to be created"
-      }
-    },
-    "dnsPrefix": {
-      "type": "string",
-      "metadata": {
-        "description": "The DNS prefix for the public IP address used by the Load Balancer"
       }
     },
     "vmSize": {
@@ -61,14 +67,6 @@
         "description": "Location for all resources."
       }
     },
-    "virtualMachineName": {
-      "type": "string",
-      "defaultValue": "adVM",
-      "maxLength": 15,
-      "metadata": {
-        "description": "Virtual machine name."
-      }
-    },
     "virtualNetworkName": {
       "type": "string",
       "defaultValue": "adVNET",
@@ -83,14 +81,7 @@
         "description": "Virtual network address range."
       }
     },
-    "networkInterfaceName": {
-      "type": "string",
-      "defaultValue": "adNic",
-      "metadata": {
-        "description": "Network interface name."
-      }
-    },
-    "privateIPAddress": {
+    "adPrivateIPAddress": {
       "type": "string",
       "defaultValue": "10.0.0.4",
       "metadata": {
@@ -111,11 +102,18 @@
         "description": "Subnet IP range."
       }
     },
-    "publicIPAddressName": {
+    "adPublicIPAddressName": {
       "type": "string",
       "defaultValue": "adPublicIP",
       "metadata": {
         "description": "Subnet IP range."
+      }
+    },
+    "networkSecurityGroupName": {
+      "type": "string",
+      "defaultValue": "subnet-default-nsg",
+      "metadata": {
+        "description": "Network Security Group Name For Subnet"
       }
     }
   },
@@ -123,30 +121,29 @@
     {
       "type": "Microsoft.Network/publicIPAddresses",
       "apiVersion": "2022-07-01",
-      "name": "[parameters('publicIPAddressName')]",
+      "name": "[parameters('adPublicIPAddressName')]",
       "location": "[parameters('location')]",
       "properties": {
         "publicIPAllocationMethod": "Static",
         "dnsSettings": {
-          "domainNameLabel": "[parameters('dnsPrefix')]"
+          "domainNameLabel": "adds-ad-blog"
         }
       }
     },
-
     {
       "type": "Microsoft.Network/networkInterfaces",
       "apiVersion": "2022-07-01",
-      "name": "[parameters('networkInterfaceName')]",
+      "name": "adNic",
       "location": "[parameters('location')]",
       "properties": {
         "ipConfigurations": [
           {
-            "name": "ipconfig1",
+            "name": "adipconfig1",
             "properties": {
               "privateIPAllocationMethod": "Static",
-              "privateIPAddress": "[parameters('privateIPAddress')]",
+              "privateIPAddress": "[parameters('adPrivateIPAddress')]",
               "publicIPAddress": {
-                "id": "[resourceId('Microsoft.Network/publicIPAddresses', parameters('publicIPAddressName'))]"
+                "id": "[resourceId('Microsoft.Network/publicIPAddresses', parameters('adPublicIPAddressName'))]"
               },
               "subnet": {
                 "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('virtualNetworkName'), parameters('subnetName'))]"
@@ -160,15 +157,14 @@
     {
       "type": "Microsoft.Compute/virtualMachines",
       "apiVersion": "2022-08-01",
-      "name": "[parameters('virtualMachineName')]",
+      "name": "adVM",
       "location": "[parameters('location')]",
       "properties": {
         "hardwareProfile": {
           "vmSize": "[parameters('vmSize')]"
         },
-
         "osProfile": {
-          "computerName": "[parameters('virtualMachineName')]",
+          "computerName": "adVM",
           "adminUsername": "[parameters('adminUsername')]",
           "adminPassword": "[parameters('adminPassword')]"
         },
@@ -180,7 +176,7 @@
             "version": "latest"
           },
           "osDisk": {
-            "name": "[format('{0}_OSDisk', parameters('virtualMachineName'))]",
+            "name": "adVM_OSDisk",
             "caching": "ReadOnly",
             "createOption": "FromImage",
             "managedDisk": {
@@ -189,7 +185,7 @@
           },
           "dataDisks": [
             {
-              "name": "[format('{0}_DataDisk', parameters('virtualMachineName'))]",
+              "name": "adVM_DataDisk",
               "caching": "ReadWrite",
               "createOption": "Empty",
               "diskSizeGB": 20,
@@ -203,19 +199,19 @@
         "networkProfile": {
           "networkInterfaces": [
             {
-              "id": "[resourceId('Microsoft.Network/networkInterfaces', parameters('networkInterfaceName'))]"
+              "id": "[resourceId('Microsoft.Network/networkInterfaces', 'adNic')]"
             }
           ]
         }
       },
       "dependsOn": [
-        "[resourceId('Microsoft.Network/networkInterfaces', parameters('networkInterfaceName'))]"
+        "[resourceId('Microsoft.Network/networkInterfaces', 'adNic')]"
       ]
     },
     {
       "type": "Microsoft.Compute/virtualMachines/extensions",
       "apiVersion": "2022-08-01",
-      "name": "[format('{0}/{1}', parameters('virtualMachineName'), 'CreateADForest')]",
+      "name": "adVM/CreateADForest",
       "location": "[parameters('location')]",
       "properties": {
         "publisher": "Microsoft.Powershell",
@@ -239,11 +235,8 @@
           }
         }
       },
-      "dependsOn": [
-        "[resourceId('Microsoft.Compute/virtualMachines', parameters('virtualMachineName'))]"
-      ]
+      "dependsOn": ["[resourceId('Microsoft.Compute/virtualMachines', 'adVM')]"]
     },
-
     {
       "type": "Microsoft.Resources/deployments",
       "apiVersion": "2020-10-01",
@@ -268,6 +261,9 @@
           },
           "location": {
             "value": "[parameters('location')]"
+          },
+          "networkSecurityGroupName": {
+            "value": "[parameters('networkSecurityGroupName')]"
           }
         },
         "template": {
@@ -313,7 +309,6 @@
             },
             "networkSecurityGroupName": {
               "type": "string",
-              "defaultValue": "subnet-default-nsg",
               "metadata": {
                 "description": "Network Security Group Name For Subnet"
               }
@@ -397,7 +392,7 @@
             "value": "[parameters('subnetRange')]"
           },
           "DNSServerAddress": {
-            "value": ["[parameters('privateIPAddress')]"]
+            "value": ["[parameters('adPrivateIPAddress')]"]
           },
           "location": {
             "value": "[parameters('location')]"
@@ -480,7 +475,121 @@
         }
       },
       "dependsOn": [
-        "[resourceId('Microsoft.Compute/virtualMachines/extensions', parameters('virtualMachineName'), 'CreateADForest')]"
+        "[resourceId('Microsoft.Compute/virtualMachines/extensions', 'adVM', 'CreateADForest')]"
+      ]
+    },
+
+    {
+      "type": "Microsoft.Network/publicIPAddresses",
+      "apiVersion": "2022-07-01",
+      "name": "ws1PublicIP",
+      "location": "[parameters('location')]",
+      "properties": {
+        "publicIPAllocationMethod": "Static",
+        "dnsSettings": {
+          "domainNameLabel": "ws1-ad-blog"
+        }
+      }
+    },
+
+    {
+      "type": "Microsoft.Network/networkInterfaces",
+      "apiVersion": "2022-07-01",
+      "name": "ws1NIC",
+      "location": "[parameters('location')]",
+      "properties": {
+        "ipConfigurations": [
+          {
+            "name": "ws1ipconfig1",
+            "properties": {
+              "privateIPAllocationMethod": "Static",
+              "privateIPAddress": "10.0.1.0",
+              "publicIPAddress": {
+                "id": "[resourceId('Microsoft.Network/publicIPAddresses', 'ws1PublicIP')]"
+              },
+              "subnet": {
+                "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('virtualNetworkName'), parameters('subnetName'))]"
+              }
+            }
+          }
+        ]
+      },
+      "dependsOn": ["[resourceId('Microsoft.Resources/deployments', 'VNet')]"]
+    },
+
+    {
+      "type": "Microsoft.Compute/virtualMachines",
+      "apiVersion": "2022-08-01",
+      "name": "ws1",
+      "location": "[parameters('location')]",
+      "properties": {
+        "hardwareProfile": {
+          "vmSize": "[parameters('vmSize')]"
+        },
+        "osProfile": {
+          "computerName": "ws1",
+          "adminUsername": "[parameters('adminUsername')]",
+          "adminPassword": "[parameters('adminPassword')]"
+        },
+        "storageProfile": {
+          "imageReference": {
+            "publisher": "MicrosoftWindowsServer",
+            "offer": "WindowsServer",
+            "sku": "2019-Datacenter",
+            "version": "latest"
+          },
+          "osDisk": {
+            "name": "ws1_OSDisk",
+            "caching": "ReadOnly",
+            "createOption": "FromImage",
+            "managedDisk": {
+              "storageAccountType": "StandardSSD_LRS"
+            }
+          },
+          "dataDisks": [
+            {
+              "name": "ws1_DataDisk",
+              "caching": "ReadWrite",
+              "createOption": "Empty",
+              "diskSizeGB": 20,
+              "managedDisk": {
+                "storageAccountType": "StandardSSD_LRS"
+              },
+              "lun": 0
+            }
+          ]
+        },
+        "networkProfile": {
+          "networkInterfaces": [
+            {
+              "id": "[resourceId('Microsoft.Network/networkInterfaces', 'ws1NIC')]"
+            }
+          ]
+        }
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Network/networkInterfaces', 'adNic')]"
+      ]
+    },
+    {
+      "type": "Microsoft.Compute/virtualMachines/extensions",
+      "apiVersion": "2022-08-01",
+      "name": "ws1AddToAd",
+      "location": "[parameters('location')]",
+      "properties": {
+        "publisher": "Microsoft.Compute",
+        "type": "CustomScriptExtension",
+        "typeHandlerVersion": "1.7",
+        "autoUpgradeMinorVersion": true,
+        "settings": {
+          "fileUris": [
+            "[uri(parameters('_artifactsLocation'), format('bootstrap/add-to-adds.ps1{0}', parameters('_artifactsLocationSasToken')))]"
+          ],
+          "commandToExecute": "powershell.exe -ExecutionPolicy Unrestricted -File add-to-adds.ps1 -domainName ',parameters('domainName'),' -adUser ',parameters('adUsername'),' -adUserPass ',parameters('adUserPass'),'"
+        }
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Compute/virtualMachines/extensions', 'adVM', 'CreateADForest')]"
       ]
     }
   ]
