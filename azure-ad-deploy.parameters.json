@@ -23,19 +23,14 @@
         "location": {
             "value": ""
         },
-        "virtualMachineName": {
-            "value": "adVM"
-        },
+       
         "virtualNetworkName": {
             "value": "adVNET"
         },
         "virtualNetworkAddressRange": {
             "value": "10.0.0.0/16"
         },
-        "networkInterfaceName": {
-            "value": "adNic"
-        },
-        "privateIPAddress": {
+        "adPrivateIPAddress": {
             "value": "10.0.0.4"
         },
         "subnetName": {
@@ -44,7 +39,7 @@
         "subnetRange": {
             "value": "10.0.0.0/24"
         },
-        "publicIPAddressName": {
+        "adPublicIPAddressName": {
             "value": "adPublicIP"
         },
         "adUsername": {
