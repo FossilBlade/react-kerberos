@@ -9,31 +9,24 @@
     }
   },
   "parameters": {
-    "_artifactsLocation": {
+    "adminUsername": {
       "type": "string",
-      "defaultValue": "[deployment().properties.templateLink.uri]",
+      "defaultValue": "localadmin",
       "metadata": {
-        "description": "The location of resources, such as templates and DSC modules, that the template depends on"
+        "description": "The name of the administrator account of the new VM and domain"
       }
     },
-    "_artifactsLocationSasToken": {
-      "type": "secureString",
-      "defaultValue": "",
+    "adUsername": {
+      "type": "string",
+      "defaultValue": "testu1",
       "metadata": {
-        "description": "Auto-generated token to access _artifactsLocation. Leave it blank unless you need to provide your own value."
+        "description": "The name of a test AD account"
       }
     },
     "adminPassword": {
       "type": "secureString",
       "metadata": {
         "description": "The password for the administrator account of the new VM and domain"
-      }
-    },
-    "adminUsername": {
-      "type": "string",
-      "defaultValue": "localadmin",
-      "metadata": {
-        "description": "The name of the administrator account of the new VM and domain"
       }
     },
     "adPrivateIPAddress": {
@@ -48,19 +41,6 @@
       "defaultValue": "adPublicIP",
       "metadata": {
         "description": "Subnet IP range."
-      }
-    },
-    "adUsername": {
-      "type": "string",
-      "defaultValue": "testu1",
-      "metadata": {
-        "description": "The name of a test AD account"
-      }
-    },
-    "adUserPass": {
-      "type": "secureString",
-      "metadata": {
-        "description": "The password for the test AD account"
       }
     },
     "domainName": {
@@ -116,6 +96,20 @@
       "defaultValue": "Standard_D2s_v3",
       "metadata": {
         "description": "Size of the VM for the controller"
+      }
+    },
+    "_artifactsLocation": {
+      "type": "string",
+      "defaultValue": "[deployment().properties.templateLink.uri]",
+      "metadata": {
+        "description": "The location of resources, such as templates and DSC modules, that the template depends on"
+      }
+    },
+    "_artifactsLocationSasToken": {
+      "type": "secureString",
+      "defaultValue": "",
+      "metadata": {
+        "description": "Auto-generated token to access _artifactsLocation. Leave it blank unless you need to provide your own value."
       }
     }
   },
@@ -553,15 +547,15 @@
           "fileUris": [
             "[uri(parameters('_artifactsLocation'), format('bootstrap/add-to-adds.ps1{0}', parameters('_artifactsLocationSasToken')))]"
           ],
-          "commandToExecute": "powershell.exe -ExecutionPolicy Unrestricted -File add-to-adds.ps1 -domainName ',parameters('domainName'),' -adUser ',parameters('adUsername'),' -adUserPass ',parameters('adUserPass'),'"
+          "commandToExecute": "powershell.exe -ExecutionPolicy Unrestricted -File add-to-adds.ps1 -domainName ',parameters('domainName'),' -adUser ',parameters('adUsername'),' -adUserPass ',parameters('adminPassword'),'"
         },
         "Properties": {
-            "DomainName": "[parameters('domainName')]",
-            "AdminCreds": {
-              "UserName": "[parameters('adUsername')]",
-              "Password":  "[parameters('adUserPass')]"
-            }
+          "DomainName": "[parameters('domainName')]",
+          "AdminCreds": {
+            "UserName": "[parameters('adUsername')]",
+            "Password": "[parameters('adminPassword')]"
           }
+        }
       },
       "dependsOn": [
         "[resourceId('Microsoft.Compute/virtualMachines/extensions', 'adVM', 'CreateADForest')]"
