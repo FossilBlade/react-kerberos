@@ -23,7 +23,7 @@
         "description": "The name of a test AD account"
       }
     },
-    "adminPassword": {
+    "commonUserPassword": {
       "type": "secureString",
       "metadata": {
         "description": "The password for the administrator account of the new VM and domain"
@@ -165,7 +165,7 @@
         "osProfile": {
           "computerName": "adVM",
           "adminUsername": "[parameters('adminUsername')]",
-          "adminPassword": "[parameters('adminPassword')]"
+          "adminPassword": "[parameters('commonUserPassword')]"
         },
         "storageProfile": {
           "imageReference": {
@@ -230,7 +230,7 @@
         },
         "protectedSettings": {
           "Items": {
-            "AdminPassword": "[parameters('adminPassword')]"
+            "AdminPassword": "[parameters('commonUserPassword')]"
           }
         }
       },
@@ -490,7 +490,7 @@
         "osProfile": {
           "computerName": "ws1",
           "adminUsername": "[parameters('adminUsername')]",
-          "adminPassword": "[parameters('adminPassword')]"
+          "adminPassword": "[parameters('commonUserPassword')]"
         },
         "storageProfile": {
           "imageReference": {
@@ -547,13 +547,13 @@
           "fileUris": [
             "[uri(parameters('_artifactsLocation'), format('bootstrap/add-to-adds.ps1{0}', parameters('_artifactsLocationSasToken')))]"
           ],
-          "commandToExecute": "powershell.exe -ExecutionPolicy Unrestricted -File add-to-adds.ps1 -domainName ',parameters('domainName'),' -adUser ',parameters('adUsername'),' -adUserPass ',parameters('adminPassword'),'"
+          "commandToExecute": "powershell.exe -ExecutionPolicy Unrestricted -File add-to-adds.ps1 -domainName ',parameters('domainName'),' -adUser ',parameters('adUsername'),' -adUserPass ',parameters('commonUserPassword'),'"
         },
         "Properties": {
           "DomainName": "[parameters('domainName')]",
           "AdminCreds": {
             "UserName": "[parameters('adUsername')]",
-            "Password": "[parameters('adminPassword')]"
+            "Password": "[parameters('commonUserPassword')]"
           }
         }
       },
