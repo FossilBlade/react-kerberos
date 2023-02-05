@@ -8,6 +8,12 @@
         "adminPassword": {
             "value": "" 
         },
+        "adUsername": {
+            "value": "test1" 
+        },
+        "adUserPass": {
+            "value": "AdBlog@1234"
+        },
         "domainName": {
             "value": "" 
         },
@@ -41,12 +47,6 @@
         },
         "adPublicIPAddressName": {
             "value": "adPublicIP"
-        },
-        "adUsername": {
-            "value": "test1" 
-        },
-        "adUserPass": {
-            "value": "AdBlog@1234"
         }
     }
 }
