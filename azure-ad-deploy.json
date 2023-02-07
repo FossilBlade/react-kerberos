@@ -545,9 +545,9 @@
         "autoUpgradeMinorVersion": true,
         "settings": {
           "fileUris": [
-            "[uri(parameters('_artifactsLocation'), format('bootstrap/add-to-adds.ps1{0}', parameters('_artifactsLocationSasToken')))]"
+            "[uri(parameters('_artifactsLocation'), format('/bootstrap/add-to-adds.ps1{0}', parameters('_artifactsLocationSasToken')))]"
           ],
-          "commandToExecute": "powershell.exe -ExecutionPolicy Unrestricted -File add-to-adds.ps1 -domainName ',parameters('domainName'),' -adUser ',parameters('adUsername'),' -adUserPass ',parameters('commonUserPassword')'"
+          "commandToExecute": "[format('powershell.exe -ExecutionPolicy Unrestricted -File add-to-adds.ps1 -domainName \"{0}\" -adUser \"{1}\" -adUserPass \"{2}\"',parameters('domainName'),parameters('adUsername'),parameters('commonUserPassword'))]"
         }
       },
       "dependsOn": [
