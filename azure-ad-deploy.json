@@ -547,7 +547,7 @@
           "fileUris": [
             "[uri(parameters('_artifactsLocation'), format('bootstrap/add-to-adds.ps1{0}', parameters('_artifactsLocationSasToken')))]"
           ],
-          "commandToExecute": "powershell.exe -ExecutionPolicy Unrestricted -File add-to-adds.ps1 -domainName ',parameters('domainName'),' -adUser ',parameters('adUsername'),' -adUserPass ',parameters('commonUserPassword'),'"
+          "commandToExecute": "powershell.exe -ExecutionPolicy Unrestricted -File add-to-adds.ps1 -domainName ',parameters('domainName'),' -adUser ',parameters('adUsername'),' -adUserPass ',parameters('commonUserPassword')'"
         }
       },
       "dependsOn": [
