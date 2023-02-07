@@ -537,7 +537,7 @@
     {
       "type": "Microsoft.Compute/virtualMachines/extensions",
       "apiVersion": "2022-08-01",
-      "name": "ws1AddToAd",
+      "name": "ws1/ws1AddToAd",
       "location": "[parameters('location')]",
       "properties": {
         "publisher": "Microsoft.Compute",
