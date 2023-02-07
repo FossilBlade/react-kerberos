@@ -530,7 +530,7 @@
         }
       },
       "dependsOn": [
-        "[resourceId('Microsoft.Network/networkInterfaces', 'adNic')]"
+        "[resourceId('Microsoft.Network/networkInterfaces', 'ws1NIC')]"
       ]
     },
 
@@ -567,7 +567,7 @@
             "name": "ws1ipconfig1",
             "properties": {
               "privateIPAllocationMethod": "Static",
-              "privateIPAddress": "10.0.1.0",
+              "privateIPAddress": "10.0.0.10",
               "publicIPAddress": {
                 "id": "[resourceId('Microsoft.Network/publicIPAddresses', 'ws1PublicIP')]"
               },
