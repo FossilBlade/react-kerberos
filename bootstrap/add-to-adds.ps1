@@ -4,5 +4,6 @@ Param (
     [string]$adUserPass,
     [string]$domainName
 )
-$credential = New-Object System.Management.Automation.PSCredential ($adUser, $adUserPass)
+$securePassword = ConvertTo-SecureString -String $adUserPass -AsPlainText -Force
+$credential = New-Object System.Management.Automation.PSCredential ($adUser, $securePassword)
 Add-Computer -DomainName $domainName -Restart -Credential $credential
